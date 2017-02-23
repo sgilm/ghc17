@@ -3,12 +3,15 @@ from filter import filter_solution
 from output import output_solution
 import datetime
 import copy
+from readin import read_in
 
 
 if __name__ == "__main__":
 
-    # Read data.
-    #num_servers, num_endpoints, num_videos, latencies, fallback, connections, requests, video_sizes, capacity
+    f = open('me_at_the_zoo.in', 'r')
+
+    latencies, fallback, connections, requests, video_sizes, num_videos, \
+           num_endpoints, num_requests, num_servers, capacity = read_in(f)
 
     solution = solution, server_use, used_servers = greedy_construct(
             num_servers,
@@ -50,5 +53,5 @@ if __name__ == "__main__":
             used_servers=used_servers
         )
 
-    solution_name = str(datetime.date)
+    solution_name = "second.txt"
     output_solution(solution, solution_name)
