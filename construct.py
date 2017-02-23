@@ -1,11 +1,14 @@
-def greedy_construct(num_servers, num_endpoints, num_videos, latencies, fallback, connections, requests, video_sizes, capacity):
+def greedy_construct(num_servers, num_endpoints, num_videos, latencies, fallback, connections, requests, video_sizes, capacity, server_use=None, used_servers=None, solution=None):
     """Constructs an initial greedy solution, starting from scratch."""
 
-    solution = [[] for i in range(num_servers)]
-    server_use = [0] * num_servers
+    if solution is None:
+        solution = [[] for i in range(num_servers)]
+    if server_use is None:
+        server_use = [0] * num_servers
 
-    # observed_latencies[endpoint][video] is the indexing used.
-    observed_latencies = [[None for j in range(num_videos)] for i in range(num_endpoints)]
+    if used_servers is None:
+        # observed_latencies[endpoint][video] is the indexing used.
+        used_servers = [[None for j in range(num_videos)] for i in range(num_endpoints)]
 
     keep_adding = True
     while keep_adding:
@@ -18,18 +21,20 @@ def greedy_construct(num_servers, num_endpoints, num_videos, latencies, fallback
         for video, endpoint, quantity in requests:
 
             # Find best server for current endpoint and video.
-            current = observed_latencies[endpoint][video]
-
-            # If not previously calculated...
-            if current is None:
+            used_server = used_servers[endpoint][video]
+            if used_server is not None:
+                current = latencies[used_server][endpoint]
+            else:
                 current = fallback[endpoint]
 
+                server_current = None
                 for server in connections[endpoint]:
                     if video in solution[server] and latencies[server][endpoint] < current:
                         current = latencies[server][endpoint]
+                        server_current = server
 
                 # Record for next time.
-                observed_latencies[endpoint][video] = current
+                used_servers[endpoint][video] = server_current
 
             # Calculate savings.
             for server in connections[endpoint]:
@@ -49,7 +54,7 @@ def greedy_construct(num_servers, num_endpoints, num_videos, latencies, fallback
             solution[server_improvement].append(video_improvement)
             server_use[server_improvement] += video_sizes[video_improvement]
 
-    return solution
+    return solution, server_use, used_servers
 
 
 if __name__ == "__main__":
